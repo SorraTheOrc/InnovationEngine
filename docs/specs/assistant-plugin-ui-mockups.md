@@ -1,8 +1,7 @@
 # 002-Assistant Plugin UI Design for Iterative Exec Doc Authoring (Mockups)
 
-**Status:** FINAL
+**Status:** Draft
 
-[View related GitHub Issue](https://github.com/SorraTheOrc/InnovationEngine/issues/4)
 
 > **Note:** This document contains UI mockups and specifications for the Assistant Headlamp plugin. These mockups illustrate the intended UI flows, interactions, and accessibility features, but do not represent final implementation or code.
 
@@ -11,6 +10,8 @@
 This specification provides detailed UI mockups for the Assistant Headlamp plugin that enables iterative authoring, editing, and validation of Executable Documents (Exec Docs) with GitHub Copilot integration.
 
 ## UI Component Mockups
+
+> **Note:** These mockups focus on the main body of the page content and do not include standard Headlamp UI Chrome (navigation bars, menus, etc.).
 
 ### 1. Main Plugin Layout
 
@@ -311,8 +312,7 @@ This specification provides detailed UI mockups for the Assistant Headlamp plugi
 │                                                                             │
 │ Format:                                                                     │
 │ ◉ Markdown (.md) - Innovation Engine format                                │
-│ ○ JSON (.json) - Structured data export                                    │
-│ ○ YAML (.yaml) - Kubernetes manifest export                                │
+│ ○ Bash (.sh) - Shell script export                                         │
 │                                                                             │
 │ ✓ Include execution results                                                 │
 │ ✓ Include context information                                               │
@@ -340,14 +340,14 @@ This specification provides detailed UI mockups for the Assistant Headlamp plugi
 │ │ ○ monitoring-setup.md (3 days ago)                                     │ │
 │ └─────────────────────────────────────────────────────────────────────────┘ │
 │                                                                             │
-│ Or browse for file:                                                         │
+│ Or ask AI for a file that matches a prompt:                                 │
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
-│ │ Select file...                                                          │ │
+│ │ Describe the type of file you're looking for...                        │ │
 │ └─────────────────────────────────────────────────────────────────────────┘ │
 │                                                                             │
 │ ⚠️ Note: Loading a document will replace current work                       │
 │                                                                             │
-│ [Load Selected] [Browse...] [Cancel]                                        │
+│ [Load Selected] [Ask AI] [Cancel]                                           │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -466,75 +466,6 @@ interface PluginState {
     error: string | null;
   };
 }
-```
-
-## Wire Frame Layouts
-
-### Desktop Layout (1200px+)
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ [Header: Plugin Title | Context Selector | Status]              (60px)    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ │                                                                         │ │
-│ │ [Sidebar: Overview Panel]     [Main: Steps View]                       │ │
-│ │      (300px)                       (900px)                             │ │
-│ │                                                                         │ │
-│ │                               ┌─ Step 1 ────────────────────────┐       │ │
-│ │ ┌─ Create New Doc ─────┐      │ [Collapsed/Expanded Content]    │       │ │
-│ │ │ [Prompt Input]       │      │ [Execution Status]              │       │ │
-│ │ │ [Generate Button]    │      │ [Action Buttons]                │       │ │
-│ │ └─────────────────────┘      └─────────────────────────────────┘       │ │
-│ │                                                                         │ │
-│ │                               ┌─ Step 2 ────────────────────────┐       │ │
-│ │                               │ [Content...]                    │       │ │
-│ │                               └─────────────────────────────────┘       │ │
-│ │                                                                         │ │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [Footer: File Operations | Status Bar]                         (40px)     │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Tablet Layout (768px - 1199px)
-```
-┌─────────────────────────────────────────────────────┐
-│ [Header: Collapsed]                       (60px)   │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│ [Tabbed Interface]                                  │
-│ [Overview Tab] [Steps Tab] [Files Tab]              │
-│                                                     │
-│ [Active Tab Content]                                │
-│ ┌─ Current Step ─────────────────────────────────┐  │
-│ │ [Full Width Content]                           │  │
-│ │ [Mobile-Optimized Controls]                    │  │
-│ └───────────────────────────────────────────────┘  │
-│                                                     │
-├─────────────────────────────────────────────────────┤
-│ [Footer: Essential Actions Only]           (40px)  │
-└─────────────────────────────────────────────────────┘
-```
-
-### Mobile Layout (320px - 767px)
-```
-┌─────────────────────────┐
-│ [≡] Assistant    [⚙️]  │ (50px)
-├─────────────────────────┤
-│                         │
-│ [Single Column Layout]  │
-│                         │
-│ [Step Navigation]       │
-│ ← Step 1 of 5 →        │
-│                         │
-│ ┌─ Current Step ─────┐  │
-│ │ [Content]          │  │
-│ │ [Actions]          │  │
-│ └───────────────────┘  │
-│                         │
-│ [Execute] [Edit] [⋮]    │
-│                         │
-├─────────────────────────┤
-│ [Bottom Sheet Actions]  │ (60px)
-└─────────────────────────┘
 ```
 
 ## User Interaction Flows
@@ -659,7 +590,7 @@ This mockup specification provides the foundation for implementing the Assistant
 - Copilot API integration with various response scenarios
 - Error boundary testing and graceful degradation
 
-## Future Enhancements
+## Possible Future Enhancements
 
 ### Phase 2 Features
 - **Dark/Light Theme Toggle**: User preference with system theme detection
@@ -683,21 +614,21 @@ This mockup specification provides the foundation for implementing the Assistant
 
 ## Implementation Phases
 
-### Phase 1: Core MVP (Months 1-3)
+### Phase 1: Core MVP
 - Basic UI components and layout
 - Overview authoring with Copilot integration
 - Step-by-step execution interface
 - File operations (save/load)
 - Basic accessibility compliance
 
-### Phase 2: Enhanced Features (Months 4-6)
+### Phase 2: Enhanced Features
 - Advanced editing capabilities
 - Error handling and recovery
 - Kubernetes context management
 - Comprehensive accessibility testing
 - Performance optimization
 
-### Phase 3: Production Ready (Months 7-9)
+### Phase 3: Production Ready
 - Enterprise features and security
 - Comprehensive testing suite
 - Documentation and training materials
