@@ -1,0 +1,49 @@
+{
+  "name": "headlamp-assistant-plugin",
+  "version": "1.0.0",
+  "description": "Headlamp plugin for authoring Executable Documents with GitHub Copilot assistance",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "mkdir -p dist && webpack --mode production",
+    "dev": "mkdir -p dist && webpack --mode development --watch",
+    "test": "jest"
+  },
+  "keywords": [
+    "headlamp",
+    "plugin",
+    "kubernetes",
+    "copilot",
+    "innovation-engine"
+  ],
+  "author": "Innovation Engine Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/prismjs": "^1.26.5",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "css-loader": "^6.8.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.0.0",
+    "style-loader": "^3.3.0",
+    "ts-jest": "^29.1.0",
+    "ts-loader": "^9.4.0",
+    "typescript": "^5.0.0",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^5.14.0",
+    "@mui/material": "^5.14.0",
+    "jest-environment-jsdom": "^30.0.0-beta.3",
+    "prismjs": "^1.29.0"
+  }
+}
