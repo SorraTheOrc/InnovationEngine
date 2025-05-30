@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/InnovationEngine/internal/az"
+	"github.com/Azure/InnovationEngine/internal/engine/assistant"
 	"github.com/Azure/InnovationEngine/internal/engine/common"
 	"github.com/Azure/InnovationEngine/internal/engine/environments"
 	"github.com/Azure/InnovationEngine/internal/engine/interactive"
@@ -200,6 +201,31 @@ func (e *Engine) InteractWithScenario(scenario *common.Scenario) error {
 		if err != nil {
 			logging.GlobalLogger.Errorf("Failed to run program %s", err)
 			return err
+		}
+
+		return nil
+	})
+}
+
+// LaunchAssistant launches the interactive assistant for generating executable documents.
+func (e *Engine) LaunchAssistant() error {
+	return fs.UsingDirectory(e.Configuration.WorkingDirectory, func() error {
+		model := assistant.NewAssistantModel(e.Configuration.Environment)
+
+		common.Program = tea.NewProgram(model, tea.WithAltScreen(), tea.WithMouseCellMotion())
+
+		var finalModel tea.Model
+		var ok bool
+		finalModel, err := common.Program.Run()
+		if err != nil {
+			logging.GlobalLogger.Errorf("Failed to run program %s", err)
+			return err
+		}
+
+		finalModel, ok = finalModel.(assistant.AssistantModel)
+		if !ok {
+			logging.GlobalLogger.Error("Failed to cast finalModel to AssistantModel")
+			return errors.New("Failed to cast finalModel to AssistantModel")
 		}
 
 		return nil
