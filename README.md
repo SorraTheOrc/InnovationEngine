@@ -202,6 +202,13 @@ the
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with
 any additional questions or comments.
 
+## Leveraging Copilot in Development
+
+The source repository includes a `.github/copilot-instructions.md` file that will improve Copilot for VS Code and Visual Studio users, as well as the Coding Agent in Github. This is a very powerful tool and we encourage you to use it in order to increase your productivity and quality. See [enabling custom instructions](https://copilot-instructions.md/#enabling-or-disabling-custom-instructions).
+
+You should consider enabling MCP servers in this workspace as the Copilot instructions are geared towards leveraging them. Specifically we recommend adding the following:
+
+* [Github MCP Server](https://github.com/github/github-mcp-server)
 
 ## Trademarks
 
