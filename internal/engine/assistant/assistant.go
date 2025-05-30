@@ -76,14 +76,39 @@ func NewAssistantModel(environment string) AssistantModel {
 	ta.CharLimit = 500
 
 	vp := viewport.New(80, 20)
-	vp.SetContent("Welcome to the Innovation Engine Assistant!\n\nI can help you create executable documents for Kubernetes tasks.\n\nType your question below and press Ctrl+S to send, or use the quick start options:")
+	welcomeMessage := `Welcome to the Innovation Engine Assistant!
+
+I can help you create executable documents for Kubernetes tasks. Here's how it works:
+
+🚀 GETTING STARTED:
+• Type your question in the text box below
+• Press Ctrl+S to send your query
+• I'll generate an executable document you can save and run
+
+⚡ QUICK START OPTIONS:
+• F1: Deploy an application to Kubernetes
+• F2: Create a Kubernetes service  
+• F3: Set up an ingress controller
+
+📝 EXAMPLE QUERIES:
+• "How do I create a deployment?"
+• "Help me set up persistent storage"
+• "I need to configure a load balancer"
+• "Show me how to scale an application"
+
+💡 TIP: All responses are executable documents you can save as .md files and run with:
+   ie execute filename.md (automatic execution)
+   ie interactive filename.md (step-by-step guide)
+
+Ready to get started? Ask me anything about Kubernetes!`
+	vp.SetContent(welcomeMessage)
 
 	return AssistantModel{
 		commands:    commands,
 		help:        help,
 		textarea:    ta,
 		viewport:    vp,
-		responses:   []string{"Welcome to the Innovation Engine Assistant!\n\nI can help you create executable documents for Kubernetes tasks.\n\nType your question below and press Ctrl+S to send, or use the quick start options:"},
+		responses:   []string{welcomeMessage},
 		environment: environment,
 		ready:       false,
 	}
@@ -164,6 +189,14 @@ func generateResponse(query string) string {
 
 # Deploy Application to Kubernetes
 
+## Prerequisites
+
+Make sure you have a running Kubernetes cluster:
+
+` + "```bash" + `
+kubectl cluster-info
+` + "```" + `
+
 ## Step 1: Create Deployment
 
 ` + "```bash" + `
@@ -181,9 +214,18 @@ kubectl expose deployment my-app --port=80 --target-port=80 --type=ClusterIP
 ` + "```bash" + `
 kubectl get deployments
 kubectl get pods -l app=my-app
+kubectl describe deployment my-app
 ` + "```" + `
 
-Save this as a .md file and run: ie execute deployment.md`
+## Optional: Scale the Deployment
+
+` + "```bash" + `
+kubectl scale deployment my-app --replicas=5
+` + "```" + `
+
+Save this as 'deployment.md' and run: 
+- ie execute deployment.md (to run automatically)
+- ie interactive deployment.md (to run step by step)`
 	}
 	
 	if strings.Contains(queryLower, "service") {
@@ -199,6 +241,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: my-service
+  labels:
+    app: my-app
 spec:
   selector:
     app: my-app
@@ -223,7 +267,13 @@ kubectl get services
 kubectl describe service my-service
 ` + "```" + `
 
-Save this as a .md file and run: ie execute service.md`
+## Step 4: Test Service Connectivity
+
+` + "```bash" + `
+kubectl run test-pod --image=busybox --rm -it --restart=Never -- /bin/sh -c "wget -qO- http://my-service"
+` + "```" + `
+
+Save this as 'service.md' and run: ie execute service.md`
 	}
 	
 	if strings.Contains(queryLower, "ingress") {
@@ -277,26 +327,167 @@ EOF
 kubectl apply -f ingress.yaml
 ` + "```" + `
 
-Save this as a .md file and run: ie execute ingress.md`
+## Step 5: Verify Ingress
+
+` + "```bash" + `
+kubectl get ingress
+kubectl describe ingress my-ingress
+` + "```" + `
+
+Save this as 'ingress.md' and run: ie execute ingress.md`
+	}
+
+	if strings.Contains(queryLower, "pod") {
+		return `Here's how to work with pods:
+
+# Working with Kubernetes Pods
+
+## Step 1: Create a Simple Pod
+
+` + "```bash" + `
+cat <<EOF > pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  labels:
+    app: my-app
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+EOF
+` + "```" + `
+
+## Step 2: Apply Pod Configuration
+
+` + "```bash" + `
+kubectl apply -f pod.yaml
+` + "```" + `
+
+## Step 3: Monitor Pod Status
+
+` + "```bash" + `
+kubectl get pods
+kubectl describe pod my-pod
+` + "```" + `
+
+## Step 4: View Pod Logs
+
+` + "```bash" + `
+kubectl logs my-pod
+` + "```" + `
+
+## Step 5: Execute Commands in Pod
+
+` + "```bash" + `
+kubectl exec -it my-pod -- /bin/bash
+` + "```" + `
+
+Save this as 'pod.md' and run: ie interactive pod.md`
+	}
+
+	if strings.Contains(queryLower, "storage") || strings.Contains(queryLower, "volume") || strings.Contains(queryLower, "pv") {
+		return `Here's how to set up persistent storage:
+
+# Kubernetes Storage and Volumes
+
+## Step 1: Create a PersistentVolume
+
+` + "```bash" + `
+cat <<EOF > pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /tmp/data
+EOF
+` + "```" + `
+
+## Step 2: Create a PersistentVolumeClaim
+
+` + "```bash" + `
+cat <<EOF > pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+EOF
+` + "```" + `
+
+## Step 3: Apply Storage Resources
+
+` + "```bash" + `
+kubectl apply -f pv.yaml
+kubectl apply -f pvc.yaml
+` + "```" + `
+
+## Step 4: Verify Storage
+
+` + "```bash" + `
+kubectl get pv
+kubectl get pvc
+` + "```" + `
+
+Save this as 'storage.md' and run: ie execute storage.md`
 	}
 	
 	// Default response
 	return `I can help you with Kubernetes tasks! Here are some things I can assist with:
 
-- Creating deployments and services
-- Setting up ingress controllers
-- Managing pods and containers
-- Configuring storage and volumes
-- Setting up monitoring and logging
+**Deployments & Services:**
+- Creating and managing deployments
+- Setting up services and load balancers
+- Scaling applications
 
-Try asking more specific questions like:
+**Networking:**
+- Configuring ingress controllers
+- Setting up service mesh
+- Network policies
+
+**Storage:**
+- Persistent volumes and claims
+- Storage classes
+- StatefulSets
+
+**Pods & Workloads:**
+- Pod management and troubleshooting
+- Jobs and CronJobs
+- DaemonSets
+
+**Common Commands:**
+Try asking questions like:
 - "How do I create a deployment?"
 - "Help me set up a service"
 - "I need to configure ingress"
+- "How do I create persistent storage?"
+- "Show me how to work with pods"
 
-Or use the quick start buttons (F1, F2, F3) for common tasks.
+**Quick Start Options:**
+- F1: Deploy an application
+- F2: Create a service  
+- F3: Set up ingress controller
 
-All responses will be in executable document format that you can save as .md files and run with Innovation Engine!`
+All responses are executable documents that you can save as .md files and run with Innovation Engine:
+- 'ie execute filename.md' (runs automatically)
+- 'ie interactive filename.md' (step-by-step)
+- 'ie test filename.md' (validates commands)
+
+What would you like to learn about?`
 }
 
 func (m AssistantModel) View() string {

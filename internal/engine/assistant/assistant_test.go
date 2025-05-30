@@ -27,12 +27,12 @@ func TestGenerateResponse(t *testing.T) {
 		{
 			name:     "deployment query",
 			query:    "Create a deployment for my app",
-			contains: []string{"deployment", "kubectl create deployment", "nginx:latest"},
+			contains: []string{"deployment", "kubectl create deployment", "nginx:latest", "Prerequisites"},
 		},
 		{
 			name:     "service query",
 			query:    "Create a Kubernetes service",
-			contains: []string{"service", "apiVersion: v1", "kind: Service"},
+			contains: []string{"service", "apiVersion: v1", "kind: Service", "my-service"},
 		},
 		{
 			name:     "ingress query",
@@ -40,9 +40,19 @@ func TestGenerateResponse(t *testing.T) {
 			contains: []string{"ingress", "nginx.ingress.kubernetes.io", "ingress-nginx"},
 		},
 		{
+			name:     "pod query",
+			query:    "How do I work with pods?",
+			contains: []string{"pod", "kubectl apply", "kubectl logs"},
+		},
+		{
+			name:     "storage query",
+			query:    "I need persistent storage",
+			contains: []string{"PersistentVolume", "PersistentVolumeClaim", "storage"},
+		},
+		{
 			name:     "general query",
 			query:    "What can you help with?",
-			contains: []string{"Kubernetes tasks", "deployments", "services"},
+			contains: []string{"Kubernetes tasks", "Deployments", "Quick Start"},
 		},
 	}
 
