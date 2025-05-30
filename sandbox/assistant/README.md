@@ -22,7 +22,7 @@ A Headlamp plugin that provides an integrated assistant for authoring Executable
 
 1. **Build the plugin:**
    ```bash
-   cd plugins/assistant
+   cd sandbox/assistant
    npm install
    npm run build
    ```
