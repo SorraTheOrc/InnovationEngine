@@ -181,6 +181,8 @@ against our [GitHub repo](https://github.com/Azure/innovationengine).
 Be sure to use our Git pre-commit script to test your contributions
 before committing, simply run the following command: `python3 main.py test test`
 
+The source repository includes a `.github/copilot-instructions.md` file that will improve Copilot for VS Code and Visual Studio users, as well as the Coding Agent in Github. This is a very powerful tool and we encourage you to use it in order to increase your productivity and quality. See [enabling custom instructions](https://copilot-instructions.md/#enabling-or-disabling-custom-instructions).
+
 This project welcomes contributions and suggestions.  Most
 contributions require you to agree to a Contributor License Agreement
 (CLA) declaring that you have the right to, and actually do, grant us
