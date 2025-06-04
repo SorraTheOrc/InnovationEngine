@@ -1,6 +1,6 @@
 {
   "name": "headlamp-assistant-plugin",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Headlamp plugin for authoring Executable Documents with GitHub Copilot assistance",
   "main": "dist/main.js",
   "scripts": {
