@@ -1,0 +1,10 @@
+{
+  "name": "assistant",
+  "version": "1.0.0",
+  "description": "Assistant plugin for authoring Executable Documents with GitHub Copilot assistance",
+  "author": "Innovation Engine Team",
+  "homepage": "https://github.com/SorraTheOrc/InnovationEngine",
+  "repository": "https://github.com/SorraTheOrc/InnovationEngine",
+  "license": "MIT",
+  "entrypoint": "dist/main.js"
+}
