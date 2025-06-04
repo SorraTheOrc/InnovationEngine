@@ -1,28 +1,28 @@
-import React from 'react';
+import { Plugin } from '@kinvolk/headlamp-plugin';
 import AssistantPanel from './components/AssistantPanel';
 
 // Plugin registration function that would be called by Headlamp
-export function registerPlugin() {
-  // In a real Headlamp environment, this would use the actual Headlamp plugin API
-  // For now, this is a placeholder that demonstrates the plugin structure
-  console.log('Assistant Plugin: Registering with Headlamp');
-  
-  return {
+const plugin = new Plugin({
+  name: 'assistant',
+  sidebar: {
     name: 'assistant',
-    sidebar: {
-      name: 'assistant',
-      label: 'Assistant',
-      icon: 'smart_toy', // Material-UI icon name
-      url: '/assistant',
+    label: 'Assistant',
+    icon: 'smart_toy', // Material-UI icon name
+    url: '/assistant',
+  },
+  routes: [
+    {
+      path: '/assistant',
+      exact: true,
+      component: AssistantPanel,
     },
-    routes: [
-      {
-        path: '/assistant',
-        exact: true,
-        component: AssistantPanel,
-      },
-    ],
-  };
+  ],
+});
+
+export function registerPlugin() {
+  // Register the plugin with Headlamp
+  plugin.register();
+  return plugin;
 }
 
 // Export the main component for direct use
