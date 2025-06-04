@@ -83,7 +83,7 @@ Click on any of the pre-built quick start actions:
 
 3. **Run tests:**
    ```bash
-   npm test
+   npx jest
    ```
 
 ### Project Structure
@@ -110,13 +110,13 @@ The plugin includes comprehensive unit tests:
 
 ```bash
 # Run all tests
-npm test
+npx jest
 
 # Run tests in watch mode
-npm run test:watch
+npx jest --watch
 
 # Generate coverage report
-npm run test:coverage
+npx jest --coverage
 ```
 
 ### Building
