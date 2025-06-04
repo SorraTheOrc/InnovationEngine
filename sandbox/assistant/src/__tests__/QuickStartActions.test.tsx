@@ -58,7 +58,10 @@ describe('QuickStartActions', () => {
     render(<QuickStartActions onActionClick={mockOnActionClick} />);
     
     const deploymentAction = screen.getByText('Create Deployment').closest('[data-testid="quick-action-paper"]');
-    fireEvent.click(deploymentAction!);
+    expect(deploymentAction).not.toBeNull(); // Ensure the element exists before firing the event
+    if (deploymentAction) {
+      fireEvent.click(deploymentAction);
+    }
     
     expect(mockOnActionClick).toHaveBeenCalledWith(
       'Create a deployment for my application with nginx image'

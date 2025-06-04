@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Box,
   Typography,
-  Button,
   Paper,
 } from '@mui/material';
 import {
@@ -58,6 +57,7 @@ const QuickStartActions: React.FC<QuickStartActionsProps> = ({ onActionClick }) 
           <Paper
             key={index}
             elevation={1}
+            data-testid="quick-action-paper"
             sx={{
               p: 2,
               minWidth: 200,

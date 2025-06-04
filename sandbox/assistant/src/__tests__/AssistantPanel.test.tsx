@@ -19,15 +19,19 @@ jest.mock('@mui/material', () => ({
   ...jest.requireActual('@mui/material'),
   Container: ({ children }: any) => <div data-testid="container">{children}</div>,
   Typography: ({ children }: any) => <div>{children}</div>,
-  TextField: ({ onChange, onKeyPress, value, ...props }: any) => (
-    <input
-      data-testid="message-input"
-      value={value || ''}
-      onChange={(e) => onChange?.(e)}
-      onKeyPress={(e) => onKeyPress?.(e)}
-      {...props}
-    />
-  ),
+  TextField: ({ onChange, onKeyPress, value, fullWidth, multiline, maxRows, ...props }: any) => {
+    // Destructure MUI-specific props so they don't get passed to the DOM element
+    // fullWidth, multiline, and maxRows are intentionally removed and not passed to the input
+    return (
+      <input
+        data-testid="message-input"
+        value={value || ''}
+        onChange={(e) => onChange?.(e)}
+        onKeyPress={(e) => onKeyPress?.(e)}
+        {...props}
+      />
+    );
+  },
   Button: ({ onClick, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled} data-testid="send-button">
       {children}

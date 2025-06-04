@@ -18,24 +18,13 @@ A Headlamp plugin that provides an integrated assistant for authoring Executable
 - Access to a Kubernetes cluster (local or remote)
 - Innovation Engine CLI (optional, for executing generated documents)
 
-### Install the Plugin
+### Start the Plugin
 
-1. **Build the plugin:**
    ```bash
    cd sandbox/assistant
    npm install
-   npm run build
+   npm run start
    ```
-
-2. **Install in Headlamp:**
-   - Copy the entire `assistant` folder to your Headlamp plugins directory
-   - The location depends on your Headlamp installation:
-     - Linux: `~/.config/headlamp/plugins/`
-     - macOS: `~/Library/Application Support/headlamp/plugins/`
-     - Windows: `%APPDATA%\headlamp\plugins\`
-
-3. **Restart Headlamp** to load the plugin
-
 ## Usage
 
 ### Accessing the Assistant
@@ -83,13 +72,13 @@ Click on any of the pre-built quick start actions:
 
 1. **Clone and install dependencies:**
    ```bash
-   cd plugins/assistant
+   cd sandbox/assistant
    npm install
    ```
 
 2. **Start development mode:**
    ```bash
-   npm run dev
+   npm run start
    ```
 
 3. **Run tests:**
