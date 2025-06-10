@@ -13,7 +13,7 @@ This implementation plan covers the development of an intuitive user interface f
 | 002-003 | File Operations                       | 002-002          | **IMPLEMENTED**           |                                                                |
 | 002-004 | Kubernetes Context/Namespace Selector | None             | **IMPLEMENTED**           |                                                                |
 | 002-005 | Phase Management System               | 002-001, 002-002 | **IMPLEMENTED**           |                                                                |
-| 002-006 | Accessibility Implementation          | 002-001, 002-002 | **NOT STARTED**           |                                                                |
+| 002-006 | Accessibility Implementation          | 002-001, 002-002 | **NOT STARTED**           | [#8](https://github.com/SorraTheOrc/InnovationEngine/issues/8) |
 | 002-007 | Step Execution Engine                 | 002-002, 002-004 | **IMPLEMENTED**           |                                                                |
 | 002-008 | Azure OpenAI Integration              | 002-001, 002-002 | **IMPLEMENTED**           | [#6](https://github.com/SorraTheOrc/InnovationEngine/issues/6) |
 | 002-009 | Help System for Overview Editing      | 002-001, 002-008 | **IMPLEMENTED**           |                                                                |
