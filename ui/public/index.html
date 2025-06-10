@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1976d2" />
+    <meta name="description" content="Innovation Engine - Accessible Exec Doc Authoring UI with WCAG 2.1 AA compliance" />
+    <title>Innovation Engine - Exec Doc Authoring</title>
+    
+    <!-- Preload critical fonts for accessibility -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- WCAG 2.1 AA compliant styling -->
+    <style>
+      /* Ensure proper focus visibility during loading */
+      *:focus-visible {
+        outline: 2px solid #1976d2;
+        outline-offset: 2px;
+      }
+      
+      /* High contrast mode support */
+      @media (prefers-contrast: high) {
+        :root {
+          --primary-color: #000000;
+          --background-color: #ffffff;
+          --text-color: #000000;
+        }
+      }
+      
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+      
+      /* Loading screen with accessibility */
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      }
+      
+      .loading-text {
+        color: #1976d2;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e0e0e0;
+        border-top: 4px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Screen reader only content */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div style="padding: 20px; font-family: Arial, sans-serif; text-align: center;">
+        <h1>JavaScript Required</h1>
+        <p>This application requires JavaScript to function properly. Please enable JavaScript in your browser and refresh the page.</p>
+        <p>For accessibility assistance, please contact support.</p>
+      </div>
+    </noscript>
+    
+    <!-- Loading screen with accessibility features -->
+    <div id="loading-screen" class="loading-screen" role="status" aria-live="polite">
+      <div class="loading-text">Innovation Engine</div>
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <div class="sr-only">Loading accessible executive document authoring interface...</div>
+    </div>
+    
+    <!-- React app mount point -->
+    <div id="root"></div>
+    
+    <!-- Remove loading screen when React app loads -->
+    <script>
+      // Remove loading screen once React takes over
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          const loadingScreen = document.getElementById('loading-screen');
+          if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.transition = 'opacity 0.3s ease-out';
+            setTimeout(function() {
+              loadingScreen.remove();
+            }, 300);
+          }
+        }, 100);
+      });
+    </script>
+  </body>
+</html>
