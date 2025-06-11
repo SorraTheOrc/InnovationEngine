@@ -1,6 +1,8 @@
-import Typography from '@mui/material/Typography';
 import React from 'react';
+import { Box } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import { ExecDocStep, Message } from './ExecDocTypes';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 interface ExecDocStepEditorProps {
   step: ExecDocStep;
@@ -8,6 +10,7 @@ interface ExecDocStepEditorProps {
   onRunStep: (stepId: string) => void;
   currentContext: string;
   currentNamespace: string;
+  isFocused?: boolean;
   // authoringPhase param was removed as we no longer display phase guidance
 }
 
@@ -16,7 +19,8 @@ export const ExecDocStepEditor: React.FC<ExecDocStepEditorProps> = ({
   onStepChange,
   onRunStep,
   currentContext,
-  currentNamespace
+  currentNamespace,
+  isFocused = false
 }) => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [assistancePrompt, setAssistancePrompt] = React.useState('');
@@ -76,6 +80,28 @@ export const ExecDocStepEditor: React.FC<ExecDocStepEditorProps> = ({
       executionOutput: undefined
     });
   };
+
+  // Keyboard shortcuts for step-specific actions
+  const handleToggleEdit = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleToggleAssistant = () => {
+    setShowAssistantPanel(!showAssistantPanel);
+  };
+
+  const handleRunCurrent = () => {
+    handleRunStep();
+  };
+
+  // Only enable keyboard shortcuts when this step is focused
+  useKeyboardShortcuts({
+    onToggleEdit: handleToggleEdit,
+    onToggleAssistant: handleToggleAssistant,
+    onRunCurrent: handleRunCurrent,
+  }, {
+    enabled: isFocused
+  });
 
   const handleGetAssistance = () => {
     if (!assistancePrompt.trim()) return;
@@ -194,9 +220,12 @@ export const ExecDocStepEditor: React.FC<ExecDocStepEditorProps> = ({
   return (
     <div
       style={{
-        border: '1px solid #e0e0e0',
+        border: isFocused ? '2px solid #1976d2' : '1px solid #e0e0e0',
         borderRadius: '8px',
         marginBottom: '20px',
+        backgroundColor: isFocused ? '#f3f8ff' : 'white',
+        boxShadow: isFocused ? '0 2px 8px rgba(25, 118, 210, 0.15)' : 'none',
+        transition: 'all 0.2s ease-in-out',
         overflow: 'hidden',
       }}
     >

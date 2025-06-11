@@ -226,7 +226,14 @@ export const OverviewAuthoring: React.FC<OverviewAuthoringProps> = ({
               type="text"
               value={azureAITopic}
               onChange={(e) => setAzureAITopic(e.target.value)}
-              placeholder="E.g., Kubernetes Deployment with Service Mesh"
+              onKeyDown={(e) => {
+                // Handle CTRL+ENTER or just ENTER to generate with Azure AI
+                if ((e.key === 'Enter') && azureAITopic.trim() && !isAzureAIGenerating) {
+                  e.preventDefault(); // Prevent form submission
+                  handleGenerateWithAzureAI();
+                }
+              }}
+              placeholder="E.g., Kubernetes Deployment with Service Mesh (Press ENTER to generate)"
               style={{
                 width: '100%',
                 padding: '8px 12px',

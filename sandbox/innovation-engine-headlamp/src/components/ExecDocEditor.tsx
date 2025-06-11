@@ -1,10 +1,14 @@
 import React from 'react';
 import Typography from '@mui/material/Typography';
+import { Box, IconButton, Tooltip } from '@mui/material';
+import { Help } from '@mui/icons-material';
 import { ExecDoc, ExecDocStep } from './ExecDocTypes';
 import { ExecDocStepEditor } from './ExecDocStepEditor';
 import { OverviewAuthoring } from './OverviewAuthoring';
 import { FileOperations } from './FileOperations';
 import { KubernetesContextSelector } from './KubernetesContextSelector';
+import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 interface ExecDocEditorProps {
   initialDoc?: ExecDoc | null;
@@ -55,6 +59,10 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
   const [availableNamespaces, setAvailableNamespaces] = React.useState<string[]>(['default', 'kube-system', 'kube-public']);
   const [currentNamespace, setCurrentNamespace] = React.useState('default');
   const [isAdmin, setIsAdmin] = React.useState(false);
+
+  // State for keyboard shortcuts and help
+  const [showKeyboardHelp, setShowKeyboardHelp] = React.useState(false);
+  const [currentStepIndex, setCurrentStepIndex] = React.useState(0);
 
   // Create a new document with overview
   const handleSaveOverview = (overview: string) => {
@@ -222,6 +230,134 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
     alert(`Doc would be saved as: ${execDoc.title}.${format}`);
   };
 
+  // Keyboard shortcuts handlers
+  const handleNewDocument = () => {
+    setExecDoc(null);
+    setCurrentView('overview');
+    setAuthoringPhase('create-overview');
+    setCurrentStepIndex(0);
+  };
+
+  const handleSaveDocument = () => {
+    if (execDoc) {
+      handleSaveExecDoc(execDoc);
+    }
+  };
+
+  const handleOpenDocument = () => {
+    handleLoadExecDoc();
+  };
+
+  const handleAddNewStep = () => {
+    if (!execDoc) return;
+    
+    const newStep: ExecDocStep = {
+      id: `step-${Date.now()}`,
+      title: 'New Step',
+      description: '',
+      isExpanded: true,
+      isCodeBlock: false
+    };
+    
+    setExecDoc({
+      ...execDoc,
+      steps: [...execDoc.steps, newStep],
+      updatedAt: new Date()
+    });
+    
+    setCurrentStepIndex(execDoc.steps.length);
+  };
+
+  const handleDeleteCurrentStep = () => {
+    if (!execDoc || execDoc.steps.length === 0) return;
+    
+    const stepToDelete = execDoc.steps[currentStepIndex];
+    if (!stepToDelete) return;
+    
+    if (window.confirm(`Are you sure you want to delete "${stepToDelete.title}"?`)) {
+      const newSteps = execDoc.steps.filter((_, index) => index !== currentStepIndex);
+      setExecDoc({
+        ...execDoc,
+        steps: newSteps,
+        updatedAt: new Date()
+      });
+      
+      // Adjust current step index
+      if (currentStepIndex >= newSteps.length) {
+        setCurrentStepIndex(Math.max(0, newSteps.length - 1));
+      }
+    }
+  };
+
+  const handleMoveStepUp = () => {
+    if (!execDoc || currentStepIndex <= 0) return;
+    
+    const newSteps = [...execDoc.steps];
+    [newSteps[currentStepIndex - 1], newSteps[currentStepIndex]] = 
+    [newSteps[currentStepIndex], newSteps[currentStepIndex - 1]];
+    
+    setExecDoc({
+      ...execDoc,
+      steps: newSteps,
+      updatedAt: new Date()
+    });
+    
+    setCurrentStepIndex(currentStepIndex - 1);
+  };
+
+  const handleMoveStepDown = () => {
+    if (!execDoc || currentStepIndex >= execDoc.steps.length - 1) return;
+    
+    const newSteps = [...execDoc.steps];
+    [newSteps[currentStepIndex], newSteps[currentStepIndex + 1]] = 
+    [newSteps[currentStepIndex + 1], newSteps[currentStepIndex]];
+    
+    setExecDoc({
+      ...execDoc,
+      steps: newSteps,
+      updatedAt: new Date()
+    });
+    
+    setCurrentStepIndex(currentStepIndex + 1);
+  };
+
+  const handleFocusNextStep = () => {
+    if (!execDoc || execDoc.steps.length === 0) return;
+    setCurrentStepIndex((prev) => Math.min(prev + 1, execDoc.steps.length - 1));
+  };
+
+  const handleFocusPrevStep = () => {
+    if (!execDoc || execDoc.steps.length === 0) return;
+    setCurrentStepIndex((prev) => Math.max(prev - 1, 0));
+  };
+
+  const handleRunCurrentStep = () => {
+    if (!execDoc || execDoc.steps.length === 0) return;
+    const currentStep = execDoc.steps[currentStepIndex];
+    if (currentStep) {
+      handleRunStep(currentStep.id);
+    }
+  };
+
+  const handleToggleAssistant = () => {
+    setShowKeyboardHelp(!showKeyboardHelp);
+  };
+
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    onSave: handleSaveDocument,
+    onNew: handleNewDocument,
+    onOpen: handleOpenDocument,
+    onNewStep: handleAddNewStep,
+    onDeleteStep: handleDeleteCurrentStep,
+    onMoveStepUp: handleMoveStepUp,
+    onMoveStepDown: handleMoveStepDown,
+    onFocusNextStep: handleFocusNextStep,
+    onFocusPrevStep: handleFocusPrevStep,
+    onRunCurrent: handleRunCurrentStep,
+    onToggleAssistant: handleToggleAssistant,
+  });
+
   // Render overview authoring view
   const renderOverviewPanel = () => {
     return (
@@ -306,15 +442,30 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
         {execDoc.steps.length === 0 ? (
           <Typography color="textSecondary">No steps defined yet.</Typography>
         ) : (
-          execDoc.steps.map((step) => (
-            <ExecDocStepEditor
+          execDoc.steps.map((step, index) => (
+            <div
               key={step.id}
-              step={step}
-              onStepChange={handleStepChange}
-              onRunStep={handleRunStep}
-              currentContext={currentContext}
-              currentNamespace={currentNamespace}
-            />
+              onClick={() => setCurrentStepIndex(index)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCurrentStepIndex(index);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Focus step ${index + 1}: ${step.title}`}
+              style={{ cursor: 'pointer' }}
+            >
+              <ExecDocStepEditor
+                step={step}
+                onStepChange={handleStepChange}
+                onRunStep={handleRunStep}
+                currentContext={currentContext}
+                currentNamespace={currentNamespace}
+                isFocused={index === currentStepIndex}
+              />
+            </div>
           ))
         )}
       </div>
@@ -459,6 +610,30 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
       <div style={{ flex: 1, padding: '0 16px 16px', overflowY: 'auto' }}>
         {currentView === 'overview' ? renderOverviewPanel() : renderStepsPanel()}
       </div>
+
+      {/* Keyboard Shortcuts Help Button */}
+      <Box sx={{ position: 'fixed', bottom: 16, right: 16 }}>
+        <Tooltip title="Keyboard Shortcuts (F1)">
+          <IconButton
+            onClick={() => setShowKeyboardHelp(true)}
+            sx={{ 
+              backgroundColor: 'primary.main', 
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'primary.dark'
+              }
+            }}
+          >
+            <Help />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      {/* Keyboard Shortcuts Help Dialog */}
+      <KeyboardShortcutsHelp
+        open={showKeyboardHelp}
+        onClose={() => setShowKeyboardHelp(false)}
+      />
     </div>
   );
 };
