@@ -9,6 +9,13 @@ import { FileOperations } from './FileOperations';
 import { KubernetesContextSelector } from './KubernetesContextSelector';
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { 
+  useScreenReaderAnnouncement, 
+  useSkipLinks, 
+  useHighContrastMode,
+  ariaAttributes,
+  generateAccessibleId 
+} from '../utils/accessibility';
 
 interface ExecDocEditorProps {
   initialDoc?: ExecDoc | null;
@@ -63,6 +70,20 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
   // State for keyboard shortcuts and help
   const [showKeyboardHelp, setShowKeyboardHelp] = React.useState(false);
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0);
+
+  // Accessibility features
+  const { isHighContrast, colors } = useHighContrastMode();
+  const [announceMessage, setAnnounceMessage] = React.useState('');
+  
+  // Initialize skip links for accessibility
+  useSkipLinks();
+  
+  // Screen reader announcements
+  useScreenReaderAnnouncement(announceMessage);
+
+  // Generate accessible IDs
+  const editorId = React.useMemo(() => generateAccessibleId('execdoc-editor'), []);
+  const mainContentId = React.useMemo(() => generateAccessibleId('main-content'), []);
 
   // Create a new document with overview
   const handleSaveOverview = (overview: string) => {
@@ -236,16 +257,19 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
     setCurrentView('overview');
     setAuthoringPhase('create-overview');
     setCurrentStepIndex(0);
+    setAnnounceMessage('New document created. Focus moved to overview editing.');
   };
 
   const handleSaveDocument = () => {
     if (execDoc) {
       handleSaveExecDoc(execDoc);
+      setAnnounceMessage(`Document "${execDoc.title}" saved successfully.`);
     }
   };
 
   const handleOpenDocument = () => {
     handleLoadExecDoc();
+    setAnnounceMessage('Opening file browser for document selection.');
   };
 
   const handleAddNewStep = () => {
@@ -265,7 +289,9 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
       updatedAt: new Date()
     });
     
-    setCurrentStepIndex(execDoc.steps.length);
+    const newStepIndex = execDoc.steps.length;
+    setCurrentStepIndex(newStepIndex);
+    setAnnounceMessage(`New step added. Focus moved to step ${newStepIndex + 1}: ${newStep.title}.`);
   };
 
   const handleDeleteCurrentStep = () => {
@@ -283,15 +309,17 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
       });
       
       // Adjust current step index
-      if (currentStepIndex >= newSteps.length) {
-        setCurrentStepIndex(Math.max(0, newSteps.length - 1));
-      }
+      const newIndex = Math.max(0, Math.min(currentStepIndex, newSteps.length - 1));
+      setCurrentStepIndex(newIndex);
+      
+      setAnnounceMessage(`Step "${stepToDelete.title}" deleted. ${newSteps.length > 0 ? `Focus moved to step ${newIndex + 1}.` : 'No steps remaining.'}`);
     }
   };
 
   const handleMoveStepUp = () => {
     if (!execDoc || currentStepIndex <= 0) return;
     
+    const currentStep = execDoc.steps[currentStepIndex];
     const newSteps = [...execDoc.steps];
     [newSteps[currentStepIndex - 1], newSteps[currentStepIndex]] = 
     [newSteps[currentStepIndex], newSteps[currentStepIndex - 1]];
@@ -303,11 +331,13 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
     });
     
     setCurrentStepIndex(currentStepIndex - 1);
+    setAnnounceMessage(`Step "${currentStep.title}" moved up to position ${currentStepIndex}.`);
   };
 
   const handleMoveStepDown = () => {
     if (!execDoc || currentStepIndex >= execDoc.steps.length - 1) return;
     
+    const currentStep = execDoc.steps[currentStepIndex];
     const newSteps = [...execDoc.steps];
     [newSteps[currentStepIndex], newSteps[currentStepIndex + 1]] = 
     [newSteps[currentStepIndex + 1], newSteps[currentStepIndex]];
@@ -319,16 +349,21 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
     });
     
     setCurrentStepIndex(currentStepIndex + 1);
+    setAnnounceMessage(`Step "${currentStep.title}" moved down to position ${currentStepIndex + 2}.`);
   };
 
   const handleFocusNextStep = () => {
     if (!execDoc || execDoc.steps.length === 0) return;
-    setCurrentStepIndex((prev) => Math.min(prev + 1, execDoc.steps.length - 1));
+    const newIndex = Math.min(currentStepIndex + 1, execDoc.steps.length - 1);
+    setCurrentStepIndex(newIndex);
+    setAnnounceMessage(`Focus moved to step ${newIndex + 1}: ${execDoc.steps[newIndex].title}.`);
   };
 
   const handleFocusPrevStep = () => {
     if (!execDoc || execDoc.steps.length === 0) return;
-    setCurrentStepIndex((prev) => Math.max(prev - 1, 0));
+    const newIndex = Math.max(currentStepIndex - 1, 0);
+    setCurrentStepIndex(newIndex);
+    setAnnounceMessage(`Focus moved to step ${newIndex + 1}: ${execDoc.steps[newIndex].title}.`);
   };
 
   const handleRunCurrentStep = () => {
@@ -336,6 +371,7 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
     const currentStep = execDoc.steps[currentStepIndex];
     if (currentStep) {
       handleRunStep(currentStep.id);
+      setAnnounceMessage(`Executing step "${currentStep.title}".`);
     }
   };
 
@@ -473,17 +509,35 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
   };
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '16px' }}>
+    <div 
+      id={editorId}
+      role="application"
+      aria-label="Executable Document Editor"
+      style={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: colors.background,
+        color: colors.text 
+      }}
+    >
+      <header role="banner" style={{ padding: '16px' }}>
         {/* Authoring Phase Indicator */}
-        <div style={{ 
-          marginBottom: '16px',
-          padding: '8px 12px',
-          backgroundColor: '#e3f2fd',
-          borderRadius: '4px',
-          border: '1px solid #bbdefb'
-        }}>
-          <Typography variant="subtitle1" style={{ fontWeight: 'bold' }}>{getPhaseDisplayName()}</Typography>
+        <div 
+          role="status"
+          aria-live="polite"
+          style={{ 
+            marginBottom: '16px',
+            padding: '8px 12px',
+            backgroundColor: isHighContrast ? colors.background : '#e3f2fd',
+            borderRadius: '4px',
+            border: `1px solid ${isHighContrast ? colors.border : '#bbdefb'}`,
+            color: colors.text
+          }}
+        >
+          <Typography variant="subtitle1" style={{ fontWeight: 'bold', color: colors.text }}>
+            {getPhaseDisplayName()}
+          </Typography>
           
           <div style={{ 
             display: 'flex', 
@@ -541,44 +595,54 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
         </div>
       
         {/* Kubernetes Context Selector */}
-        <KubernetesContextSelector
-          contexts={availableContexts}
-          currentContext={currentContext}
-          onChangeContext={setCurrentContext}
-          namespaces={availableNamespaces}
-          currentNamespace={currentNamespace}
-          onChangeNamespace={setCurrentNamespace}
-          isAdmin={isAdmin}
-        />
+        <nav role="navigation" aria-label="Kubernetes context selection">
+          <KubernetesContextSelector
+            contexts={availableContexts}
+            currentContext={currentContext}
+            onChangeContext={setCurrentContext}
+            namespaces={availableNamespaces}
+            currentNamespace={currentNamespace}
+            onChangeNamespace={setCurrentNamespace}
+            isAdmin={isAdmin}
+          />
+        </nav>
         
         {/* File Operations (only show in steps view) */}
         {currentView === 'steps' && (
-          <FileOperations
-            execDoc={execDoc}
-            onSave={handleSaveExecDoc}
-            onLoad={handleLoadExecDoc}
-            onExport={handleExportExecDoc}
-            autoSaveEnabled={autoSaveEnabled}
-            onToggleAutoSave={() => setAutoSaveEnabled(prev => !prev)}
-            autoSaveInterval={autoSaveInterval}
-            onChangeAutoSaveInterval={setAutoSaveInterval}
-            recentFiles={recentFiles}
-            onOpenRecentFile={(file) => alert(`Would open: ${file}`)}
-          />
+          <div role="region" aria-label="File operations">
+            <FileOperations
+              execDoc={execDoc}
+              onSave={handleSaveExecDoc}
+              onLoad={handleLoadExecDoc}
+              onExport={handleExportExecDoc}
+              autoSaveEnabled={autoSaveEnabled}
+              onToggleAutoSave={() => setAutoSaveEnabled(prev => !prev)}
+              autoSaveInterval={autoSaveInterval}
+              onChangeAutoSaveInterval={setAutoSaveInterval}
+              recentFiles={recentFiles}
+              onOpenRecentFile={(file) => alert(`Would open: ${file}`)}
+            />
+          </div>
         )}
         
         {/* Toggle Button for View (only show if we have a document) */}
         {execDoc && (
-          <div style={{ marginBottom: '16px' }}>
+          <div role="tablist" aria-label="Document view selection" style={{ marginBottom: '16px' }}>
             <div style={{ display: 'flex' }}>
               <button
-                onClick={() => setCurrentView('overview')}
+                role="tab"
+                aria-selected={currentView === 'overview'}
+                aria-controls={mainContentId}
+                onClick={() => {
+                  setCurrentView('overview');
+                  setAnnounceMessage('Switched to overview view.');
+                }}
                 style={{
                   flex: 1,
                   padding: '8px',
-                  backgroundColor: currentView === 'overview' ? '#1976d2' : '#f1f1f1',
-                  color: currentView === 'overview' ? 'white' : 'black',
-                  border: 'none',
+                  backgroundColor: currentView === 'overview' ? colors.primary : '#f1f1f1',
+                  color: currentView === 'overview' ? colors.primaryText : colors.text,
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '4px 0 0 4px',
                   cursor: 'pointer',
                   fontWeight: currentView === 'overview' ? 'bold' : 'normal'
@@ -587,13 +651,19 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
                 Document Overview
               </button>
               <button
-                onClick={() => setCurrentView('steps')}
+                role="tab"
+                aria-selected={currentView === 'steps'}
+                aria-controls={mainContentId}
+                onClick={() => {
+                  setCurrentView('steps');
+                  setAnnounceMessage('Switched to steps view.');
+                }}
                 style={{
                   flex: 1,
                   padding: '8px',
-                  backgroundColor: currentView === 'steps' ? '#1976d2' : '#f1f1f1',
-                  color: currentView === 'steps' ? 'white' : 'black',
-                  border: 'none',
+                  backgroundColor: currentView === 'steps' ? colors.primary : '#f1f1f1',
+                  color: currentView === 'steps' ? colors.primaryText : colors.text,
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '0 4px 4px 0',
                   cursor: 'pointer',
                   fontWeight: currentView === 'steps' ? 'bold' : 'normal'
@@ -604,27 +674,49 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
             </div>
           </div>
         )}
-      </div>
+      </header>
       
       {/* Main Content Area */}
-      <div style={{ flex: 1, padding: '0 16px 16px', overflowY: 'auto' }}>
+      <main 
+        id={mainContentId}
+        role="main"
+        aria-label={`${currentView === 'overview' ? 'Document overview' : 'Document steps'} content`}
+        tabIndex={-1}
+        style={{ 
+          flex: 1, 
+          padding: '0 16px 16px', 
+          overflowY: 'auto',
+          backgroundColor: colors.background,
+          color: colors.text
+        }}
+      >
         {currentView === 'overview' ? renderOverviewPanel() : renderStepsPanel()}
-      </div>
+      </main>
 
       {/* Keyboard Shortcuts Help Button */}
       <Box sx={{ position: 'fixed', bottom: 16, right: 16 }}>
-        <Tooltip title="Keyboard Shortcuts (F1)">
+        <Tooltip title="Keyboard Shortcuts Help (Press F1 or click)">
           <IconButton
-            onClick={() => setShowKeyboardHelp(true)}
+            onClick={() => {
+              setShowKeyboardHelp(true);
+              setAnnounceMessage('Keyboard shortcuts help dialog opened.');
+            }}
+            aria-label="Open keyboard shortcuts help"
+            aria-keyshortcuts="F1"
             sx={{ 
-              backgroundColor: 'primary.main', 
-              color: 'white',
+              backgroundColor: isHighContrast ? colors.primary : 'primary.main', 
+              color: colors.primaryText,
+              border: isHighContrast ? `2px solid ${colors.border}` : 'none',
               '&:hover': {
-                backgroundColor: 'primary.dark'
+                backgroundColor: isHighContrast ? colors.secondary : 'primary.dark'
+              },
+              '&:focus': {
+                outline: `2px solid ${colors.focus}`,
+                outlineOffset: '2px'
               }
             }}
           >
-            <Help />
+            <Help aria-hidden="true" />
           </IconButton>
         </Tooltip>
       </Box>
@@ -632,7 +724,10 @@ export const ExecDocEditor: React.FC<ExecDocEditorProps> = ({
       {/* Keyboard Shortcuts Help Dialog */}
       <KeyboardShortcutsHelp
         open={showKeyboardHelp}
-        onClose={() => setShowKeyboardHelp(false)}
+        onClose={() => {
+          setShowKeyboardHelp(false);
+          setAnnounceMessage('Keyboard shortcuts help dialog closed.');
+        }}
       />
     </div>
   );
